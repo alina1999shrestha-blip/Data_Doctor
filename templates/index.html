@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Doctor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<!-- ═══ UPLOAD SCREEN ═══ -->
+<div id="upload-screen" class="screen active">
+    <div class="upload-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect width="48" height="48" rx="14" fill="#534AB7"/>
+                    <path d="M14 24C14 18.477 18.477 14 24 14V14C29.523 14 34 18.477 34 24V24C34 29.523 29.523 34 24 34V34C18.477 34 14 29.523 14 24V24Z" stroke="white" stroke-width="2.5"/>
+                    <circle cx="20" cy="22" r="1.5" fill="white"/>
+                    <circle cx="28" cy="22" r="1.5" fill="white"/>
+                    <path d="M20 28C20 28 21.5 30 24 30C26.5 30 28 28 28 28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h1 class="logo-title">data doctor</h1>
+            <p class="logo-subtitle">Multi-agent dataset diagnostics</p>
+        </div>
+
+        <div id="dropzone" class="dropzone">
+            <div class="dropzone-inner">
+                <svg class="upload-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p class="drop-text">Drop your CSV here</p>
+                <p class="drop-hint">or click to browse</p>
+                <input type="file" id="file-input" accept=".csv,.tsv" hidden>
+            </div>
+        </div>
+
+        <div class="tech-badges">
+            <span class="badge">FastAPI</span>
+            <span class="badge">OpenAI GPT-4o</span>
+            <span class="badge">Pandas</span>
+            <span class="badge">Plotly</span>
+            <span class="badge">Multi-Agent</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="loading-screen" class="screen">
+    <div class="loading-container">
+        <div class="agent-pipeline">
+            <div class="agent-step" id="step-profiler">
+                <div class="step-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                </div>
+                <span class="step-label">Profiler</span>
+                <div class="step-status"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="agent-step" id="step-anomaly">
+                <div class="step-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <span class="step-label">Anomaly detective</span>
+                <div class="step-status"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="agent-step" id="step-feature">
+                <div class="step-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                </div>
+                <span class="step-label">Feature engineer</span>
+                <div class="step-status"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="agent-step" id="step-supervisor">
+                <div class="step-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                </div>
+                <span class="step-label">Supervisor QA</span>
+                <div class="step-status"></div>
+            </div>
+        </div>
+        <p class="loading-message" id="loading-msg">Initializing pipeline...</p>
+    </div>
+</div>
+
+<!-- ═══ DASHBOARD SCREEN ═══ -->
+<div id="dashboard-screen" class="screen">
+    <header class="dash-header">
+        <div class="dash-header-left">
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="14" fill="#534AB7"/>
+                <circle cx="20" cy="22" r="1.5" fill="white"/>
+                <circle cx="28" cy="22" r="1.5" fill="white"/>
+                <path d="M20 28C20 28 21.5 30 24 30C26.5 30 28 28 28 28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="dash-title">data doctor</span>
+        </div>
+        <button class="btn-new" onclick="location.reload()">+ New analysis</button>
+    </header>
+
+    <main class="dash-main">
+        <!-- Health Score Hero -->
+        <section class="health-hero" id="health-hero">
+            <div class="grade-ring">
+                <svg viewBox="0 0 120 120" class="grade-svg">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="8"/>
+                    <circle id="grade-circle" cx="60" cy="60" r="52" fill="none" stroke="#534AB7" stroke-width="8" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="grade-text">
+                    <span class="grade-letter" id="grade-letter">—</span>
+                    <span class="grade-score" id="grade-score">0/100</span>
+                </div>
+            </div>
+            <div class="health-details">
+                <h2 id="health-summary">Analyzing your dataset...</h2>
+                <div class="score-bars" id="score-bars"></div>
+            </div>
+        </section>
+
+        <!-- Priority Actions -->
+        <section class="priorities-section" id="priorities-section" style="display:none">
+            <h3 class="section-title">Priority actions</h3>
+            <div class="priorities-list" id="priorities-list"></div>
+        </section>
+
+        <!-- Tabs -->
+        <div class="tab-bar" id="tab-bar" style="display:none">
+            <button class="tab active" data-tab="charts">Visualizations</button>
+            <button class="tab" data-tab="anomalies">Anomalies</button>
+            <button class="tab" data-tab="features">Features</button>
+            <button class="tab" data-tab="columns">Columns</button>
+        </div>
+
+        <!-- Charts Tab -->
+        <section class="tab-content active" id="tab-charts">
+            <div class="charts-grid" id="charts-grid"></div>
+        </section>
+
+        <!-- Anomalies Tab -->
+        <section class="tab-content" id="tab-anomalies">
+            <div class="anomaly-list" id="anomaly-list"></div>
+        </section>
+
+        <!-- Features Tab -->
+        <section class="tab-content" id="tab-features">
+            <div class="feature-list" id="feature-list"></div>
+        </section>
+
+        <!-- Columns Tab -->
+        <section class="tab-content" id="tab-columns">
+            <div class="columns-table-wrap" id="columns-table-wrap"></div>
+        </section>
+    </main>
+
+    <!-- Chat Panel -->
+    <div class="chat-toggle" id="chat-toggle" onclick="toggleChat()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+
+    <div class="chat-panel" id="chat-panel">
+        <div class="chat-header">
+            <span>Chat with your data</span>
+            <button class="chat-close" onclick="toggleChat()">&times;</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">
+                <p>Hey! I've analyzed your dataset. Ask me anything — why a column was flagged, what to fix first, or for custom visualizations.</p>
+            </div>
+        </div>
+        <div class="chat-input-wrap">
+            <input type="text" id="chat-input" placeholder="Ask about your data..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send" onclick="sendChat()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
